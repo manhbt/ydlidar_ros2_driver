@@ -68,11 +68,11 @@ ydlidar_ros2_driver phụ thuộc vào thư viện YDLidar-SDK. Nếu bạn chư
 
 1. Clone nhánh master của ydlidar_ros2_driver từ GitHub (dành cho phiên bản cũ):
 
-   `git clone https://github.com/YDLIDAR/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
+   `git clone https://github.com/manhbt/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
 
    Clone nhánh humble của ydlidar_ros2_driver từ GitHub (dành cho humble, jazzy, v.v.):
 
-   `git clone -b humble https://github.com/YDLIDAR/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
+   `git clone -b humble https://github.com/manhbt/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
 
 2. Biên dịch gói ydlidar_ros2_driver:
 
