@@ -1,74 +1,119 @@
-![YDLIDAR](images/YDLidar.jpg  "YDLIDAR")
-# YDLIDAR ROS2 Driver
+# 1. Hướng dẫn kết nối YDLidar S2 (Mã YDS2xxx )
 
-ydlidar_ros2_driver is a new ros package, which is designed to gradually become the standard driver package for ydlidar devices in the ros2 environment.
+YDLidar S2 là lidar được trang bị trên các dòng robot hút bụi nội địa của Trung Quốc, vì vậy gần như không có tài liệu official từ YDLidar.
 
-## How to [install ROS2](https://index.ros.org/doc/ros2/Installation)
-[ubuntu](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
+<img src="images/S2_top.jpg" width="400"> <img src="images/S2_bot.jpg" width="400">
 
-[windows](https://index.ros.org/doc/ros2/Installation/Dashing/Windows-Install-Binary/)
+Hướng dẫn này hoàn toàn dựa trên thực nghiệm của tác giả, có điều gì thiếu sót, bạn đọc vui lòng góp ý với tác giả qua các kênh hỗ trợ (FB mess, zalo, ...) để hướng dẫn ngày càng hoàn thiện hơn
 
-## How to Create a ROS2 workspace
-[Create a workspace](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#create-a-workspace)
+YDLidar S2 sử dụng connector JST 1.25 4pin để kết nối tới MCU hoặc PC/máy tính nhúng thông qua module chuyển đổi USB-TTL.
+
+<img src="images/S2_conn.jpg" width="250">
+
+Thứ tự các chân tín hiệu trên connector này như sau:
+
+| Pin | Tên           | kết nối với  MCU (STM32/ESP32/Arduino)                                   | Kết nối tới PC/SBC qua Module chuyển đổi USB-TTL
+| --- | ------------- | ------------------------------------------------------------------------ | --------------------------- |
+| 1   | +5V           | Nối tới nguồn +5V                                                        | +5V của module USB-TTL
+| 2   | TX            | Nối tới chân RX của MCU                                                  | RXD của module USB-TTL
+| 3   | GND           | Nối tới mass chung (GND)                                                 | GND của module USB-TTL
+| 4   | M-C           | Nối tới chân PWM của MCU để điều chỉnh tốc độ quét của module (optional) | không cần, S2 sẽ quay với tần số quét mặc định khoảng 6Hz
 
 
-## Build & Install YDLidar SDK
+Tuy nhiên trong khuôn khổ repo này chỉ đề cập đến việc kết nối YDLidar S2 với PC hoặc máy tính nhúng SBC (như Jetson, Raspberry pi, ...) thông qua module chuyển đổi USB-TTL.
+Thư viện Arduino tác giả sẽ bổ sung trong thời gian sớm nhất có thể.
 
-ydlidar_ros2_driver depends on YDLidar-SDK library. If you have never installed YDLidar-SDK library or it is out of date, you must first install YDLidar-SDK library. If you have installed the latest version of YDLidar-SDK, skip this step and go to the next step.
+***Chú ý***
 
-1. Download or clone the [YDLIDAR/YDLidar-SDK](https://github.com/YDLIDAR/YDLidar-SDK) repository on GitHub.
-2. Compile and install the YDLidar-SDK under the ***build*** directory following `README.md` of YDLIDAR/YDLidar-SDK.
+*Nên sử dụng module chuyển đổi USB-UART "xịn" như CP2102, FTDI232. Tuy nhiên cũng có thể dùng CH340 giá rẻ và rất phổ biến, ae có thể tìm mua với giá dao động từ 15-40k từ các shop linh kiện điện từ hoặc sàn thương mại điện tử. Trong bài viết này minh họa sử dụng với module FTDI232.*
 
-## Build ydlidar_ros2_driver
+# 2. Hướng dẫn test nhanh với tool EAILidarTest
 
-1. Clone ydlidar_ros2_driver master branch from github for old version: 
+EAILidarTest là tool chính chủ của EAI (YDLidar) dùng để xem point cloud và cài đặt 1 số filter hay ho khác.
+
+Trong nội dung khuôn khổ hướng dẫn này chỉ để cập đến việc sử dụng tool này để xem point cloud từ cảm biến YDLidar X2/S2 trả về qua UART.
+
+## 2.1. Tải và cài đặt phần mềm:
+
+Bạn có thể tải trực tiếp phần mềm EAILidarTest trên trang chủ của YDLidar tại:
+
+https://www.ydlidar.com/download/category/lidar-sensor
+
+<img src="images/EAILidarTest_download.jpg" width="600">
+
+Hoặc cũng có thể lấy trong thư mục tools của repo này.
+
+## 2.2. Cấu hình và sử dung EAILidarTest
+
+Sau khi tải và giải nén, mở phần mềm EAILidarTest lên và thực hiện cấu hình trên phần mềm như hình minh họa sau:
+- Chọn đúng cổng COM của USB-TTL module.
+- Chọn đúng model ***S2-Pro*** , các thông số khác để mặc định.
+
+<img src="images/EaiLidarTest_cfg.JPG" width="600">
+<img src="images/EaiLidarTest_view.JPG" width="600">
+
+
+# 3. Sử dụng YDLIDAR ROS2 Driver
+
+ydlidar_ros2_driver là driver chính chủ do YDLidar phát hành, tuy nhiên hiện tại không còn thường xuyên được update nữa. và đã được clone về repo này nhắm mục đích hỗ trợ anh em các vấn đề với ROS2 hiện đại.
+
+## 3.1. Biên dịch & Cài đặt YDLidar SDK
+
+ydlidar_ros2_driver phụ thuộc vào thư viện YDLidar-SDK. Nếu bạn chưa cài đặt thư viện YDLidar-SDK hoặc phiên bản hiện tại đã lỗi thời, bạn phải cài đặt thư viện YDLidar-SDK trước. Nếu bạn đã cài đặt phiên bản mới nhất của YDLidar-SDK, hãy bỏ qua bước này và chuyển sang bước tiếp theo.
+
+1. Tải xuống hoặc clone repository [YDLIDAR/YDLidar-SDK](https://github.com/YDLIDAR/YDLidar-SDK) trên GitHub.
+2. Biên dịch và cài đặt YDLidar-SDK trong thư mục ***build*** theo hướng dẫn `README.md` của YDLIDAR/YDLidar-SDK.
+
+## 3.2. Biên dịch ydlidar_ros2_driver
+
+1. Clone nhánh master của ydlidar_ros2_driver từ GitHub (dành cho phiên bản cũ):
 
    `git clone https://github.com/YDLIDAR/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
 
-   Clone ydlidar_ros2_driver humble branch from github for humble,jazzy,etc: 
+   Clone nhánh humble của ydlidar_ros2_driver từ GitHub (dành cho humble, jazzy, v.v.):
 
    `git clone -b humble https://github.com/YDLIDAR/ydlidar_ros2_driver.git ydlidar_ros2_ws/src/ydlidar_ros2_driver`
 
-2. Build ydlidar_ros2_driver package :
+2. Biên dịch gói ydlidar_ros2_driver:
 
    ```
    cd ydlidar_ros2_ws
    colcon build --symlink-install
    ```
-   Note: install colcon [see](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#install-colcon)
+   Lưu ý: Cách cài đặt colcon, xem [tại đây](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#install-colcon)
 
    ![CMAKE Finished](images/finished.png  "CMAKE Finished")
 
-   <font color=Red size=4>>Note: If the following error occurs, Please install  [YDLIDAR/YDLidar-SDK](https://github.com/YDLIDAR/YDLidar-SDK) first.</font>
+   <font color=Red size=4>>Lưu ý: Nếu xảy ra lỗi như bên dưới, vui lòng cài đặt [YDLIDAR/YDLidar-SDK](https://github.com/YDLIDAR/YDLidar-SDK) trước.</font>
 
    ![CMAKE ERROR](images/cmake_error.png  "CMAKE ERROR")
 
-3. Package environment setup :
+3. Thiết lập môi trường cho gói:
 
    `source ./install/setup.bash`
 
-    Note: Add permanent workspace environment variables.
-    It's convenientif the ROS2 environment variables are automatically added to your bash session every time a new shell is launched:
+    Lưu ý: Thêm biến môi trường workspace vĩnh viễn.
+    Sẽ rất tiện lợi nếu các biến môi trường ROS2 được tự động thêm vào phiên bash mỗi khi mở shell mới:
     ```
     echo "source ~/ydlidar_ros2_ws/install/setup.bash" >> ~/.bashrc
     source ~/.bashrc
     ```
-4. Confirmation
-    To confirm that your package path has been set, printenv the `grep -i ROS` variable.
+4. Xác nhận
+    Để xác nhận rằng đường dẫn gói đã được thiết lập, hãy dùng lệnh printenv với `grep -i ROS`.
     ```
     printenv | grep -i ROS
     ```
-    You should see something similar to:
+    Bạn sẽ thấy kết quả tương tự như sau:
         `OLDPWD=/home/tony/ydlidar_ros2_ws/install`
 
-5. Create serial port Alias [optional] 
+5. Tạo Alias cho cổng serial [tùy chọn]
     ```
     chmod 0777 src/ydlidar_ros2_driver/startup/*
     sudo sh src/ydlidar_ros2_driver/startup/initenv.sh
     ```
-    Note: After completing the previous operation, replug the LiDAR again.
-	
-## Configure LiDAR [Default parameter file](params/ydlidar.yaml)
+    Lưu ý: Sau khi hoàn thành thao tác trên, hãy rút và cắm lại thiết bị LiDAR.
+
+## 3.3. Cấu hình LiDAR [File tham số mặc định](params/ydlidar.yaml)
 
 ```
 ydlidar_ros2_driver_node:
@@ -97,112 +142,123 @@ ydlidar_ros2_driver_node:
     invalid_range_is_inf: false
     debug: false
 ```
-**`Note: It needs to be modified according to LiDAR actual situation,Or specify parameter files in the [launch file].py file.`**
-| Lidar	Type			| Parameter File		|
-|-------------------------------|-------------------------------|
-|G4 Lidar			|G4.yaml			|
-|X2/X2L Lidar			|X2.yaml			|
-|X4 Lidar			|X4.yaml			|
-|X4 Pro Lidar			|X4-Pro.yaml			|
-|TG15/TG30/TG50 Lidar		|TG.yaml			|
-|Tmini Pro/Tmini Plus		|Tmini.yaml			|
-|Tmini Plus SH			|Tmini-Plus-SH.yaml		|
-|TEA Lidar			|TEA.yaml			|
-|GS2 Lidar			|GS2.yaml			|
-|GS5 Lidar			|GS5.yaml			|
-|SDM15 Lidar			|sdm15.yaml			|
+**`Lưu ý: Cần chỉnh sửa theo thực tế của từng loại LiDAR, hoặc chỉ định file tham số trong file [launch file].py.`**
+| Loại Lidar               | File tham số			|
+|------------------------- |--------------------|
+|G4 Lidar                  |G4.yaml             |
+|X2/X2L Lidar              |X2.yaml             |
+|X4 Lidar                  |X4.yaml             |
+|X4 Pro Lidar              |X4-Pro.yaml         |
+|TG15/TG30/TG50 Lidar      |TG.yaml             |
+|Tmini Pro/Tmini Plus      |Tmini.yaml          |
+|Tmini Plus SH             |Tmini-Plus-SH.yaml  |
+|TEA Lidar                 |TEA.yaml            |
+|GS2 Lidar                 |GS2.yaml            |
+|GS5 Lidar                 |GS5.yaml            |
+|SDM15 Lidar               |sdm15.yaml          |
 
-## Run ydlidar_ros2_driver
+<font color=Red size=4> ***Lưu ý***
 
-##### Run ydlidar_ros2_driver using launch file
+Với YDlidar S2 này, file cấu hình sẽ được gửi riêng cho bạn sau khi bạn mua lidar từ tác giả (hoặc các kênh ủy quyền).
 
-The command format is : 
+Đây là 1 cách thiết thực để ủng hộ tác giả có động lực nghiên cứu và đem đến cho anh em nhiều sản phẩm thú vị hơn.
+
+Vui lòng liên hệ tác giả qua kênh hỗ trợ (FB mess, zalo,...) để lấy file cấu hình này.
+
+Link facebook tác giả: [FB tác giả](https://web.facebook.com/manhbt145).
+</font>
+
+## 3.4. Chạy ydlidar_ros2_driver
+
+##### Chạy ydlidar_ros2_driver bằng launch file
+
+Định dạng lệnh:
 
  `ros2 launch ydlidar_ros2_driver [launch file].py`
 
-1. Connect LiDAR uint(s).
+1. Kết nối thiết bị LiDAR.
    ```
-   ros2 launch ydlidar_ros2_driver ydlidar_launch.py 
+   ros2 launch ydlidar_ros2_driver ydlidar_launch.py
    ```
-   or 
+   hoặc
 
    ```
-   launch $(ros2 pkg prefix ydlidar_ros2_driver)/share/ydlidar_ros2_driver/launch/ydlidar.py 
+   launch $(ros2 pkg prefix ydlidar_ros2_driver)/share/ydlidar_ros2_driver/launch/ydlidar.py
    ```
-2. RVIZ 
+2. RVIZ
    ```
-   ros2 launch ydlidar_ros2_driver ydlidar_launch_view.py 
+   ros2 launch ydlidar_ros2_driver ydlidar_launch_view.py
    ```
     ![View](images/view.png  "View")
 
-3. echo scan topic
+3. Hiển thị topic scan
    ```
    ros2 run ydlidar_ros2_driver ydlidar_ros2_driver_client or ros2 topic echo /scan
    ```
 
-#####  Launch file introduction
+## 3.5. Giới thiệu về launch file
 
-The driver offers users a wealth of options when using different launch file. The launch file directory    
+Driver cung cấp nhiều tùy chọn khi sử dụng các launch file khác nhau. Thư mục chứa launch file là `"ydlidar_ros2_ws/src/ydlidar_ros2_driver/launch"`. Tất cả các launch file được liệt kê như sau:
 
-is `"ydlidar_ros2_ws/src/ydlidar_ros2_driver/launch"`. All launch files are listed as below : 
-
-| launch file               | features                                                     |
+| Launch file               | Chức năng                                                     |
 | ------------------------- | ------------------------------------------------------------ |
-| ydlidar.py         | Connect to defualt paramters<br/>Publish LaserScan message on `scan` topic |
-| ydlidar_launch.py         | Connect ydlidar.yaml Lidar specified by configuration parameters<br/>Publish LaserScan message on `scan` topic |
-| ydlidar_launch_view.py         | Connect ydlidar.yaml Lidar specified by configuration parameters and setup RVIZ<br/>Publish LaserScan message on `scan` topic |
+| ydlidar.py                | Kết nối với tham số mặc định<br/>Publish message LaserScan lên topic `scan` |
+| ydlidar_launch.py         | Kết nối LiDAR theo tham số cấu hình trong ydlidar.yaml<br/>Publish message LaserScan lên topic `scan` |
+| ydlidar_launch_view.py    | Kết nối LiDAR theo tham số cấu hình trong ydlidar.yaml và khởi động RVIZ<br/>Publish message LaserScan lên topic `scan` |
 
 
 
-## Publish Topic
-| Topic                | Type                    | Description                                      |
+## 3.6. Topic được Publish
+| Topic                | Kiểu dữ liệu            | Mô tả                                            |
 |----------------------|-------------------------|--------------------------------------------------|
-| `scan`               | sensor_msgs/LaserScan   | 2D laser scan of the 0-angle ring                |
+| `scan`               | sensor_msgs/LaserScan   | Dữ liệu quét laser 2D của vòng góc 0            |
 
-## Subscribe Service
-| Service                | Type                    | Description                                      |
+## 3.7. Service được Subscribe
+| Service              | Kiểu dữ liệu            | Mô tả                                            |
 |----------------------|-------------------------|--------------------------------------------------|
-| `stop_scan`          | std_srvs::Empty   | turn off lidar                                         |
-| `start_scan`         | std_srvs::Empty   | turn on lidar                                          |
+| `stop_scan`          | std_srvs::Empty         | Tắt LiDAR                                        |
+| `start_scan`         | std_srvs::Empty         | Bật LiDAR                                        |
 
 
 
-## Configure ydlidar_ros_driver internal parameter
+## 3.8. Cấu hình tham số nội bộ của ydlidar_ros_driver
 
-The ydlidar_ros2_driver internal parameters are in the launch file, they are listed as below :
+Các tham số nội bộ của ydlidar_ros2_driver nằm trong launch file, được liệt kê như sau:
 
-| Parameter name | Data Type | detail                                                       |
+| Tên tham số    | Kiểu dữ liệu | Chi tiết                                                       |
 | -------------- | ------- | ------------------------------------------------------------ |
-| port         | string | Set Lidar the serial port or IP address <br/>it can be set to `/dev/ttyUSB0`, `192.168.1.11`, etc. <br/>default: `/dev/ydlidar` |
-| frame_id     | string | Lidar TF coordinate system name. <br/>default: `laser_frame` |
-| ignore_array | string | LiDAR filtering angle area<br/>eg: `-90, -80, 30, 40` |
-| baudrate     | int | Lidar baudrate or network port. <br/>default: `230400` |
-| lidar_type     | int | Set lidar type <br/>0 -- TYPE_TOF<br/>1 -- TYPE_TRIANGLE<br/>2 -- TYPE_TOF_NET <br/>default: `1` |
-| device_type     | int | Set device type <br/>0 -- YDLIDAR_TYPE_SERIAL<br/>1 -- YDLIDAR_TYPE_TCP<br/>2 -- YDLIDAR_TYPE_UDP <br/>default: `0` |
-| sample_rate     | int | Set Lidar Sample Rate. <br/>default: `9` |
-| abnormal_check_count     | int | Set the number of abnormal startup data attempts. <br/>default: `4` |
-| fixed_resolution     | bool | Fixed angluar resolution. <br/>default: `true` |
-| reversion     | bool | Reversion LiDAR. <br/>default: `true` |
-| inverted     | bool | Inverted LiDAR.<br/>false -- ClockWise.<br/>true -- CounterClockWise  <br/>default: `true` |
-| auto_reconnect     | bool | Automatically reconnect the LiDAR.<br/>true -- hot plug. <br/>default: `true` |
-| isSingleChannel     | bool | Whether LiDAR is a single-channel.<br/>default: `false` |
-| intensity     | bool | Whether LiDAR has intensity.<br/>true -- G2 LiDAR.<br/>default: `false` |
-| support_motor_dtr     | bool | Whether the Lidar can be started and stopped by Serial DTR.<br/>default: `false` |
-| angle_min     | float | Minimum Valid Angle.<br/>default: `-180` |
-| angle_max     | float | Maximum Valid Angle.<br/>default: `180` |
-| range_min     | float | Minimum Valid range.<br/>default: `0.1` |
-| range_max     | float | Maximum Valid range.<br/>default: `16.0` |
-| frequency     | float | Set Scanning Frequency.<br/>default: `10.0` |
-| invalid_range_is_inf     | bool | Invalid Range is inf.<br/>true -- inf.<br/>false -- 0.0.<br/>default: `false` |
-More paramters details, see [here](details.md)
+| port         | string | Đặt cổng serial hoặc địa chỉ IP của LiDAR <br/>Có thể đặt thành `/dev/ttyUSB0`, `192.168.1.11`, v.v. <br/>Mặc định: `/dev/ydlidar` |
+| frame_id     | string | Tên hệ tọa độ TF của LiDAR. <br/>Mặc định: `laser_frame` |
+| ignore_array | string | Vùng góc lọc của LiDAR<br/>Ví dụ: `-90, -80, 30, 40` |
+| baudrate     | int | Baudrate hoặc cổng mạng của LiDAR. <br/>Mặc định: `230400` |
+| lidar_type     | int | Đặt loại LiDAR <br/>0 -- TYPE_TOF<br/>1 -- TYPE_TRIANGLE<br/>2 -- TYPE_TOF_NET <br/>Mặc định: `1` |
+| device_type     | int | Đặt loại thiết bị <br/>0 -- YDLIDAR_TYPE_SERIAL<br/>1 -- YDLIDAR_TYPE_TCP<br/>2 -- YDLIDAR_TYPE_UDP <br/>Mặc định: `0` |
+| sample_rate     | int | Đặt tốc độ lấy mẫu của LiDAR. <br/>Mặc định: `9` |
+| abnormal_check_count     | int | Đặt số lần thử khởi động lại khi dữ liệu bất thường. <br/>Mặc định: `4` |
+| fixed_resolution     | bool | Độ phân giải góc cố định. <br/>Mặc định: `true` |
+| reversion     | bool | Đảo chiều LiDAR. <br/>Mặc định: `true` |
+| inverted     | bool | Lật ngược LiDAR.<br/>false -- Chiều kim đồng hồ.<br/>true -- Ngược chiều kim đồng hồ. <br/>Mặc định: `true` |
+| auto_reconnect     | bool | Tự động kết nối lại LiDAR.<br/>true -- Hỗ trợ hot plug. <br/>Mặc định: `true` |
+| isSingleChannel     | bool | LiDAR có phải là kênh đơn hay không.<br/>Mặc định: `false` |
+| intensity     | bool | LiDAR có hỗ trợ cường độ hay không.<br/>true -- LiDAR G2.<br/>Mặc định: `false` |
+| support_motor_dtr     | bool | LiDAR có thể khởi động/dừng bằng Serial DTR hay không.<br/>Mặc định: `false` |
+| angle_min     | float | Góc hợp lệ nhỏ nhất.<br/>Mặc định: `-180` |
+| angle_max     | float | Góc hợp lệ lớn nhất.<br/>Mặc định: `180` |
+| range_min     | float | Khoảng cách hợp lệ nhỏ nhất.<br/>Mặc định: `0.1` |
+| range_max     | float | Khoảng cách hợp lệ lớn nhất.<br/>Mặc định: `16.0` |
+| frequency     | float | Đặt tần số quét.<br/>Mặc định: `10.0` |
+| invalid_range_is_inf     | bool | Khoảng cách không hợp lệ được coi là vô cực.<br/>true -- inf.<br/>false -- 0.0.<br/>Mặc định: `false` |
 
-## Contact EAI
-![Development Path](images/EAI.png)
+Xem thêm chi tiết các tham số khác [tại đây](details.md)
 
-If you have any extra questions, please feel free to [contact us](http://www.ydlidar.cn/cn/contact)
+## Liên hệ tác giả
+[FB tác giả](https://web.facebook.com/manhbt145)
 
+# Một số hướng dẫn chung về ROS:
+## Cài đặt [install ROS2](https://index.ros.org/doc/ros2/Installation)
+[ubuntu](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
 
+[windows](https://index.ros.org/doc/ros2/Installation/Dashing/Windows-Install-Binary/)
 
-
-
-
+## Tạo ROS2 workspace
+[Create a workspace](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#create-a-workspace)
