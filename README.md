@@ -120,35 +120,8 @@ Cảm ơn bác [@Hisoka Ryuko](https://web.facebook.com/tuedepzai.6912) đã ph�
     ```
     Lưu ý: Sau khi hoàn thành thao tác trên, hãy rút và cắm lại thiết bị LiDAR.
 
-## 3.3. Cấu hình LiDAR [File tham số mặc định](params/ydlidar.yaml)
+## 3.3. Cấu hình LiDAR cho S2:
 
-```
-ydlidar_ros2_driver_node:
-  ros__parameters:
-    port: /dev/ttyUSB0
-    frame_id: laser_frame
-    ignore_array: ""
-    baudrate: 230400
-    lidar_type: 1
-    device_type: 0
-    isSingleChannel: false
-    intensity: false
-    intensity_bit: 0
-    sample_rate: 9
-    abnormal_check_count: 4
-    fixed_resolution: true
-    reversion: false
-    inverted: false
-    auto_reconnect: true
-    support_motor_dtr: false
-    angle_max: 180.0
-    angle_min: -180.0
-    range_max: 64.0
-    range_min: 0.01
-    frequency: 10.0
-    invalid_range_is_inf: false
-    debug: false
-```
 **`Lưu ý: Cần chỉnh sửa theo thực tế của từng loại LiDAR, hoặc chỉ định file tham số trong file [launch file].py.`**
 | Loại Lidar               | File tham số			|
 |------------------------- |--------------------|
@@ -164,16 +137,36 @@ ydlidar_ros2_driver_node:
 |GS5 Lidar                 |GS5.yaml            |
 |SDM15 Lidar               |sdm15.yaml          |
 
-<font color=Red size=4> ***Lưu ý***
+Do cấu hình của S2 không được public trên repo của YDLidar, nên khi cài đặt driver xong, anh em cần phải sửa lại thông số để phù hợp với YDLidar S2 như sau:
+(có thể sửa trực tiếp vào file src/params/ydlidar.yaml)
 
-Với YDlidar S2 này, file cấu hình sẽ được gửi riêng cho bạn sau khi bạn mua lidar từ tác giả (hoặc các kênh ủy quyền).
-
-Đây là 1 cách thiết thực để ủng hộ tác giả có động lực nghiên cứu và đem đến cho anh em nhiều sản phẩm thú vị hơn.
-
-Vui lòng liên hệ tác giả qua kênh hỗ trợ (FB mess, zalo,...) để lấy file cấu hình này.
-
-Link facebook tác giả: [FB tác giả](https://web.facebook.com/manhbt145).
-</font>
+```
+ydlidar_ros2_driver_node:
+  ros__parameters:
+    port: /dev/ttyUSB0
+    frame_id: laser_frame
+    ignore_array: ""
+    baudrate: 115200
+    lidar_type: 4
+    device_type: 0
+    sample_rate: 3
+    abnormal_check_count: 4
+    fixed_resolution: true
+    reversion: false
+    inverted: false
+    auto_reconnect: true
+    isSingleChannel: true
+    intensity_bit: 0
+    intensity: false
+    support_motor_dtr: false
+    angle_max: 180.0
+    angle_min: -180.0
+    range_max: 8.0
+    range_min: 0.11
+    frequency: 6.0
+    invalid_range_is_inf: false
+    debug: false
+```
 
 ## 3.4. Chạy ydlidar_ros2_driver
 
@@ -212,7 +205,6 @@ Driver cung cấp nhiều tùy chọn khi sử dụng các launch file khác nha
 | ydlidar.py                | Kết nối với tham số mặc định<br/>Publish message LaserScan lên topic `scan` |
 | ydlidar_launch.py         | Kết nối LiDAR theo tham số cấu hình trong ydlidar.yaml<br/>Publish message LaserScan lên topic `scan` |
 | ydlidar_launch_view.py    | Kết nối LiDAR theo tham số cấu hình trong ydlidar.yaml và khởi động RVIZ<br/>Publish message LaserScan lên topic `scan` |
-
 
 
 ## 3.6. Topic được Publish
@@ -259,13 +251,10 @@ Các tham số nội bộ của ydlidar_ros2_driver nằm trong launch file, đ�
 Xem thêm chi tiết các tham số khác [tại đây](details.md)
 
 ## Liên hệ tác giả
-[FB tác giả](https://web.facebook.com/manhbt145)
 
-# Một số hướng dẫn chung về ROS:
-## Cài đặt [install ROS2](https://index.ros.org/doc/ros2/Installation)
-[ubuntu](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/)
+- [FB tác giả](https://web.facebook.com/manhbt145)
 
-[windows](https://index.ros.org/doc/ros2/Installation/Dashing/Windows-Install-Binary/)
 
-## Tạo ROS2 workspace
-[Create a workspace](https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/#create-a-workspace)
+## Lời cảm ơn
+
+- Cảm ơn bác [@Hisoka Ryuko](https://web.facebook.com/tuedepzai.6912) đã phát hiện ra vấn đề liên quan đến checksum đã đề cập ở trên.
