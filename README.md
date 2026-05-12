@@ -62,6 +62,13 @@ ydlidar_ros2_driver là driver chính chủ do YDLidar phát hành, tuy nhiên h
 ydlidar_ros2_driver phụ thuộc vào thư viện YDLidar-SDK. Nếu bạn chưa cài đặt thư viện YDLidar-SDK hoặc phiên bản hiện tại đã lỗi thời, bạn phải cài đặt thư viện YDLidar-SDK trước. Nếu bạn đã cài đặt phiên bản mới nhất của YDLidar-SDK, hãy bỏ qua bước này và chuyển sang bước tiếp theo.
 
 1. Tải xuống hoặc clone repository [YDLIDAR/YDLidar-SDK](https://github.com/YDLIDAR/YDLidar-SDK) trên GitHub.
+
+Lưu ý chọn đúng tag hoặc latest release là [**V1.2.7**](https://github.com/YDLIDAR/YDLidar-SDK/releases/tag/V1.2.7).
+
+Lý do là vì trên nhánh master của YDLidar SDK đang có issue liên quan đến checksum đôi khi gây crash driver. [Issue #63](https://github.com/YDLIDAR/YDLidar-SDK/issues/63).
+
+Cảm ơn bác [@Hisoka Ryuko](https://web.facebook.com/tuedepzai.6912) đã phát hiện ra :)
+
 2. Biên dịch và cài đặt YDLidar-SDK trong thư mục ***build*** theo hướng dẫn `README.md` của YDLIDAR/YDLidar-SDK.
 
 ## 3.2. Biên dịch ydlidar_ros2_driver
